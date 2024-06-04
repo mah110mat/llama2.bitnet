@@ -1,3 +1,14 @@
+## llama2.bitnet
+```
+python3 tinystories.py download
+python3 tinystories.py pretokenize
+
+mkdir -p BitLinear/out
+mkdir -p BitLinear/log
+
+python3 bittrain.py
+```
+
 ## llama2.c
 
 <p align="center">
