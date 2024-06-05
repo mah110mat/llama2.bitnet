@@ -10,9 +10,10 @@ run: run.c
 
 # useful for a debug build, can then e.g. analyze with valgrind, example:
 # $ valgrind --leak-check=full ./run out/model.bin -n 3
-rundebug: run.c
-	$(CC) -g -o run run.c -lm
-	$(CC) -g -o runq runq.c -lm
+debug: run.c runb.c
+	#$(CC) -g -o run run.c -lm
+	#$(CC) -g -o runq runq.c -lm
+	$(CC) -g -o runb runb.c -lm
 
 # https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 # https://simonbyrne.github.io/notes/fastmath/
