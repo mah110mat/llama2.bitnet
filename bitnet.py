@@ -74,6 +74,7 @@ class BitLinear(nn.Linear):
         
     def forward(self, x):
         # 1. LayerNorm (input: x, output: x_norm)
+        #import pdb; pdb.set_trace()
         x_norm = self.layernorm(x)
 
         # 2. Absmax Quatization (input: x_norm, output: x_q, gamma)
@@ -82,11 +83,15 @@ class BitLinear(nn.Linear):
         # 3. 1-bit Weights化 (input: -, output: w_q, beta)
         w_q, beta = self.quantize_weights(self.weight, self.epsilon)
 
-        # 4. テンソル積(⊗) (input: x_q,w_q, output: x_matmul)
-        x_matmul = torch.nn.functional.linear(x_q, w_q, self.bias)
+        ## 4. テンソル積(⊗) (input: x_q,w_q, output: x_matmul)
+        ## 5. Dequantization (input: x_matmul,beta,gamma, output: output)
+        #x_matmul = torch.nn.functional.linear(x_q, w_q, self.bias)
+        #output = x_matmul * (beta * gamma * self.rQb)
 
-        # 5. Dequantization (input: x_matmul,beta,gamma, output: output)
-        output = x_matmul * (beta * gamma * self.rQb)
+        x_matmul = torch.nn.functional.linear(x_norm, w_q, self.bias)
+        output = x_matmul * beta
+
+
         #output = x_matmul * (beta * gamma / self.Qb)
         if np.isnan(self.Qb):
             print("self.Qb: ", self.Qb, beta, gamma, x_matmul)

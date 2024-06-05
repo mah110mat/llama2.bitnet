@@ -134,8 +134,11 @@ class Attention(nn.Module):
     ):
         bsz, seqlen, _ = x.shape
 
+        #import pdb; pdb.set_trace()
         # QKV
-        xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
+        xq = self.wq(x)
+        xk = self.wk(x)
+        xv = self.wv(x)
         xq = xq.view(bsz, seqlen, self.n_local_heads, self.head_dim)
         xk = xk.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
         xv = xv.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
@@ -186,7 +189,14 @@ class FeedForward(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
-        return self.dropout(self.w2(F.silu(self.w1(x)) * self.w3(x)))
+        x_w1 = self.w1(x)
+        x_w3 = self.w3(x)
+        x_w1 = F.silu(x_w1)
+        x_w13 = x_w1 * x_w3
+        #import pdb; pdb.set_trace()
+        out = self.w2(x_w13)
+        return self.dropout(out)
+        #return self.dropout(self.w2(F.silu(self.w1(x)) * self.w3(x)))
 
 
 class TransformerBlock(nn.Module):
@@ -210,7 +220,8 @@ class TransformerBlock(nn.Module):
         #h = x + self.attention.forward(self.attention_norm(x), freqs_cos, freqs_sin)
         #out = h + self.feed_forward.forward(self.ffn_norm(h))
         h = x + self.attention.forward(x, freqs_cos, freqs_sin)
-        out = h + self.feed_forward.forward(h)
+        ffn = self.feed_forward.forward(h)
+        out = h + ffn
         return out
 
 
@@ -236,8 +247,10 @@ class Transformer(nn.Module):
 
         # some useful precompute for the RoPE relative positional embeddings
         freqs_cos, freqs_sin = precompute_freqs_cis(self.params.dim // self.params.n_heads, self.params.max_seq_len)
-        self.register_buffer("freqs_cos", freqs_cos, persistent=False)
-        self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+        #self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+        #self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+        self.register_buffer("freqs_cos", freqs_cos, persistent=True)   # for exporting
+        self.register_buffer("freqs_sin", freqs_sin, persistent=True)
 
         # init all weights
         self.apply(self._init_weights)
@@ -267,6 +280,8 @@ class Transformer(nn.Module):
         for layer in self.layers:
             h = layer(h, freqs_cos, freqs_sin)
         #h = self.norm(h)
+
+        import pdb; pdb.set_trace()
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss
