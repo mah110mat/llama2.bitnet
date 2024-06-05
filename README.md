@@ -17,9 +17,7 @@ make run
 
 | # | nn.Linear | BitLinear | memo | 
 | - | ---       | ---       | ---  |
-| example | Once upon a time, there was a little girl named Lily. She loved the color pink and had a pink dress. One day, she was playing outside with her friends and they found a big book called a dictionary. Lily asked her mommy, "What is this big book?" Her mommy said, "It's a dictionary. It has lots of words in it." Lily thought it was interesting and asked if she could read it. Her mommy said,
-| Once upon a time, there was a little girl named Lily. She loved the color pink and had a pink dress. One day, Lily went to the park with her mommy. Daddy brought her a pink balloon and she was so happy.When Lily got to the park, she saw a big dog. The dog was barking loudly and Lily felt scared. She didn't know what to do. But her mommy
-| |
+| example | Once upon a time, there was a little girl named Lily. She loved the color pink and had a pink dress. One day, she was playing outside with her friends and they found a big book called a dictionary. Lily asked her mommy, "What is this big book?" Her mommy said, "It's a dictionary. It has lots of words in it." Lily thought it was interesting and asked if she could read it. Her mommy said,| Once upon a time, there was a little girl named Lily. She loved the color pink and had a pink dress. One day, Lily went to the park with her mommy. Daddy brought her a pink balloon and she was so happy.When Lily got to the park, she saw a big dog. The dog was barking loudly and Lily felt scared. She didn't know what to do. But her mommy| |
 | Training Time | 12 Hr 40 Min | 21 Hr 30 Min | RTX3090 x1 |
 | Validation Loss | 1.11 | 1.28 | |
 
