@@ -281,7 +281,7 @@ class Transformer(nn.Module):
             h = layer(h, freqs_cos, freqs_sin)
         #h = self.norm(h)
 
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss

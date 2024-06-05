@@ -85,11 +85,12 @@ class BitLinear(nn.Linear):
 
         ## 4. テンソル積(⊗) (input: x_q,w_q, output: x_matmul)
         ## 5. Dequantization (input: x_matmul,beta,gamma, output: output)
-        #x_matmul = torch.nn.functional.linear(x_q, w_q, self.bias)
-        #output = x_matmul * (beta * gamma * self.rQb)
+        x_matmul = torch.nn.functional.linear(x_q, w_q, self.bias)
+        output = x_matmul * (beta * gamma * self.rQb)
 
-        x_matmul = torch.nn.functional.linear(x_norm, w_q, self.bias)
-        output = x_matmul * beta
+        ## debug code, to omit the feature map quantization.
+        #x_matmul = torch.nn.functional.linear(x_norm, w_q, self.bias)
+        #output = x_matmul * beta
 
 
         #output = x_matmul * (beta * gamma / self.Qb)
@@ -139,7 +140,7 @@ class BitLinear158b(BitLinear):
 
         return weight_trinarized, beta
     
-    # 2. BitLinear b158では、[0, Qb]のスケーリングは行わないません。
+    # 2. BitLinear b158では、[0, Qb]のスケーリングは行いません。
     def absmax_quantize(self, x: torch.Tensor, Qb: int, epsilon: float) -> Tuple[torch.Tensor, float]:
         # スケールgammaの計算（absmax quantization）
         gamma = torch.abs(x).max().clamp(min=epsilon)

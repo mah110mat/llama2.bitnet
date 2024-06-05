@@ -73,7 +73,7 @@ with torch.no_grad():
             print('---------------')
 
     #model.export(f'{out_dir}/model.bin')
-    model_export(model, os.path.join(out_dir, "model.bin"), version=45400)
+    #model_export(model, os.path.join(out_dir, "model.bin"), version=45400)
 
     #original_tensor = torch.tensor([[1]], device="cuda")
     #indices_tensor = original_tensor.long()
