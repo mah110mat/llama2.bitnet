@@ -31,11 +31,17 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from tinystories import Task
 from export import model_export
 
+import torch._dynamo
+torch._dynamo.config.suppress_errors = True
+
+TYPE = 'nnLinear'
 # -----------------------------------------------------------------------------
 # I/O
-out_dir = "out"
-eval_interval = 2000
-log_interval = 1
+out_dir = f"{TYPE}/out"
+tb_log_dir =f"{TYPE}/log"
+
+eval_interval = 500 #2000
+log_interval = 100
 eval_iters = 100
 eval_only = False  # if True, script exits right after the first eval
 always_save_checkpoint = False  # if True, always save a checkpoint after each eval
@@ -44,8 +50,9 @@ init_from = "scratch"  # 'scratch' or 'resume'
 wandb_log = False  # disabled by default
 wandb_project = "llamac"
 wandb_run_name = "run" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+tb_log = True  # enabled by default
 # data
-batch_size = 128  # if gradient_accumulation_steps > 1, this is the micro-batch size
+batch_size = 64 #128  # if gradient_accumulation_steps > 1, this is the micro-batch size
 max_seq_len = 256
 vocab_source = "llama2" # llama2|custom; use Lllama 2 vocab from Meta, or custom trained
 vocab_size = 32000 # the Llama 2 tokenizer has 32K tokens
@@ -69,7 +76,7 @@ decay_lr = True  # whether to decay the learning rate
 warmup_iters = 1000  # how many steps to warm up for
 # system
 device = "cuda"  # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
-dtype = "bfloat16"  # float32|bfloat16|float16
+dtype = "float32" #"bfloat16"  # float32|bfloat16|float16
 compile = True  # use PyTorch 2.0 to compile the model to be faster
 # -----------------------------------------------------------------------------
 config_keys = [
@@ -243,6 +250,9 @@ def get_lr(it):
 if wandb_log and master_process:
     import wandb
     wandb.init(project=wandb_project, name=wandb_run_name, config=config)
+if tb_log and master_process:
+    from torch.utils.tensorboard import SummaryWriter
+    writer = SummaryWriter(log_dir=tb_log_dir)
 
 # training loop
 train_batch_iter = iter_batches(split="train")
@@ -275,6 +285,12 @@ while True:
                 )
             except Exception as e:
                 print(f"logging to wandb failed: {e}")
+        if tb_log:
+            writer.add_scalar( "tokens", iter_num * tokens_per_iter, iter_num)
+            writer.add_scalar( "loss/train", losses["train"], iter_num)
+            writer.add_scalar( "loss/val", losses["val"], iter_num)
+            writer.add_scalar( "lr", lr, iter_num)
+            writer.add_scalar( "mfu", running_mfu * 100, iter_num) # convert to percentage
         if losses["val"] < best_val_loss or always_save_checkpoint:
             best_val_loss = losses["val"]
             if iter_num > 0:

@@ -9,9 +9,11 @@ from model import ModelArgs, Transformer
 from tokenizer import Tokenizer
 
 from tinystories import get_tokenizer_model_path
+from export import model_export
 
 # -----------------------------------------------------------------------------
-checkpoint = 'out/ckpt.pt'
+out_dir = './nnLinear/out' # ignored if init_from is not 'resume'
+checkpoint = f'{out_dir}/ckpt.pt'
 start = "" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 num_samples = 1 # number of samples to draw
 max_new_tokens = 100 # number of tokens generated in each sample
@@ -77,3 +79,8 @@ with torch.no_grad():
             y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
             print(enc.decode(y[0].tolist()))
             print('---------------')
+    model_export(model, os.path.join(out_dir, "model.bin"), version=0)
+
+    #original_tensor = torch.tensor([[1]], device="cuda")
+    #indices_tensor = original_tensor.long()
+    #torch.onnx.export(model, indices_tensor, f'{out_dir}/model.onnx', verbose=True)

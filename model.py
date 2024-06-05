@@ -246,7 +246,11 @@ class Transformer(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, tokens: torch.Tensor, targets: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(
+            self, 
+            tokens: torch.Tensor, 
+            targets: Optional[torch.Tensor] = None
+            ) -> torch.Tensor:
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         h = self.dropout(h)
@@ -261,6 +265,7 @@ class Transformer(nn.Module):
             # if we are given some desired targets also calculate the loss
             logits = self.output(h)
             self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            #print(h.shape, logits.shape, logits.view(-1, logits.size(-1)).shape, targets.view(-1).shape)
         else:
             # inference-time mini-optimization: only forward the output on the very last position
             logits = self.output(h[:, [-1], :]) # note: using list [-1] to preserve the time dim
