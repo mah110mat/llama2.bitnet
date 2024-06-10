@@ -34,11 +34,21 @@ from export import model_export
 import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
-TYPE='BitLinear'
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--type", choices=['15M', '42M', '110M'], default='15M', help="optional path to custom tokenizer ")
+args = parser.parse_args()
+TYPE=f'BitLinear.{args.type}'
+#TYPE='BitLinear.15M'
+#TYPE='BitLinear.42M'
+#TYPE='BitLinear.110M'
 # -----------------------------------------------------------------------------
 # I/O
 out_dir = f"{TYPE}/out"
 tb_log_dir =f"{TYPE}/log"
+for dir in [TYPE, out_dir, tb_log_dir]:
+    if not os.path.exists(dir):
+        os.makedirs(dir)
 
 eval_interval = 500 #2000
 log_interval = 100
@@ -54,16 +64,38 @@ tb_log = True  # enabled by default
 # data
 batch_size = 32 #128  # if gradient_accumulation_steps > 1, this is the micro-batch size
 
-max_seq_len = 256
 vocab_source = "llama2" # llama2|custom; use Lllama 2 vocab from Meta, or custom trained
 vocab_size = 32000 # the Llama 2 tokenizer has 32K tokens
 # model
-dim = 288
-n_layers = 6
-n_heads = 6
-n_kv_heads = 6
+if TYPE == 'BitLinear.15M':
+    max_seq_len = 256
+    dim         = 288
+    n_layers    = 6
+    n_heads     = 6
+    n_kv_heads  = 6
+elif TYPE == 'BitLinear.42M':
+    max_seq_len = 1024
+    dim         = 512
+    n_layers    = 8
+    n_heads     = 8
+    n_kv_heads  = 8
+    batch_size  = 4 #128  # if gradient_accumulation_steps > 1, this is the micro-batch size
+elif TYPE == 'BitLinear.110M':
+    max_seq_len = 1024
+    dim         = 768
+    n_layers    = 12
+    n_heads     = 12
+    n_kv_heads  = 12
+    batch_size  = 4 #128  # if gradient_accumulation_steps > 1, this is the micro-batch size
+else:
+    max_seq_len = 256
+    dim         = 288
+    n_layers    = 6
+    n_heads     = 6
+    n_kv_heads  = 6
+
 multiple_of = 32
-dropout = 0.0
+dropout     = 0.0
 # adamw optimizer
 gradient_accumulation_steps = 4  # used to simulate larger batch sizes
 learning_rate = 1.5e-3 # 5e-4  # max learning rate
@@ -85,7 +117,7 @@ config_keys = [
     for k, v in globals().items()
     if not k.startswith("_") and isinstance(v, (int, float, bool, str))
 ]
-exec(open("configurator.py").read())  # overrides from command line or config file
+#exec(open("configurator.py").read())  # overrides from command line or config file
 config = {k: globals()[k] for k in config_keys}  # will be useful for logging
 # -----------------------------------------------------------------------------
 

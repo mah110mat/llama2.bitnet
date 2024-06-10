@@ -14,6 +14,8 @@
     #include <unistd.h>
     #include <sys/mman.h>
 #endif
+
+#define EPSILON  (1e-6f)
 // ----------------------------------------------------------------------------
 // Transformer model
 
@@ -233,8 +235,7 @@ void rmsnorm(float* o, float* x, float* weight, int size) {
         ss += x[j] * x[j];
     }
     ss /= size;
-    ss += 1e-6f;
-    ss = 1.0f / sqrtf(ss);
+    ss = 1.0f / sqrtf(ss + EPSILON);
     // normalize and scale
     for (int j = 0; j < size; j++) {
         o[j] = weight[j] * (ss * x[j]);
@@ -264,7 +265,7 @@ void softmax(float* x, int size) {
 float absmax_quantize(float *x, int dim) {
     // スケールgammaの計算（absmax quantization）
     const int Qb = 128;
-    const float epsilon = 1e-6;
+    const float epsilon = EPSILON;
 
     int ii;
     float gamma = .0;
