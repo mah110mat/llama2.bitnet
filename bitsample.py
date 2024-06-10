@@ -9,11 +9,11 @@ import torch
 #from model import ModelArgs, Transformer
 from bitmodel import Transformer, ModelArgs
 from tokenizer import Tokenizer
-from export import model_export
+from bitexport import b158_export
 
 # -----------------------------------------------------------------------------
 #out_dir = 'out' # ignored if init_from is not 'resume'
-out_dir = './BitLinear/out' # ignored if init_from is not 'resume'
+out_dir = './BitLinear.110M/out' # ignored if init_from is not 'resume'
 start = "" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 num_samples = 1 # number of samples to draw
 max_new_tokens = 100 # number of tokens generated in each sample
@@ -73,7 +73,7 @@ with torch.no_grad():
             print('---------------')
 
     #model.export(f'{out_dir}/model.bin')
-    #model_export(model, os.path.join(out_dir, "model.bin"), version=45400)
+    b158_export(model, os.path.join(out_dir, "model.bin"))
 
     #original_tensor = torch.tensor([[1]], device="cuda")
     #indices_tensor = original_tensor.long()
